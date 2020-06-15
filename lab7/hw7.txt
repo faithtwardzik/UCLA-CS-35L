@@ -1,3 +1,9 @@
+Assignment 7: Basic Change Management
+Grade Received: 100/100
+If you found this file helpful, please consider reaching out to me:
+   Website: faithtwardzik.com
+   Insta: @faithtwardzik
+
 Homework 7 Log
 
 1) I created and entered this file: 
@@ -32,7 +38,7 @@ patching file src/util.c
 
 ChangeLog entry: 
 
-2020-02-24  Faith Sara Twardzik  <classtwa@lnxsrv09.seas.ucla.edu>
+2020-02-24  Faith Twardzik  <YOUR_USERNAME_HERE>
 
         * src/cmp.c: convert ` (grave) to ' (apostrophe) in character strings
         * src/diff.c: convert ` (grave) to ' (apostrophe) in character strings
@@ -78,13 +84,13 @@ make check
 These all worked, except for the same errors with make check as before:
 /bin/sh: /bin/sh: cannot execute binary file
 make[3]: *** [basic.log] Error 126
-make[3]: Leaving directory `/w/home.27/class/classtwa/Desktop/35L/lab7/
+make[3]: Leaving directory `/w/home.27/class/YOUR_USERNAME/Desktop/35L/lab7/
 diffutils_check/diffutils/tests'
 make[2]: *** [check-TESTS] Error 2
-make[2]: Leaving directory `/w/home.27/class/classtwa/Desktop/35L/lab7/
+make[2]: Leaving directory `/w/home.27/class/YOUR_USERNAME/Desktop/35L/lab7/
 diffutils_check/diffutils/tests'
 make[1]: *** [check-am] Error 2
-make[1]: Leaving directory `/w/home.27/class/classtwa/Desktop/35L/lab7/
+make[1]: Leaving directory `/w/home.27/class/YOUR_USERNAME/Desktop/35L/lab7/
 diffutils_check/diffutils/tests'
 make: *** [check-recursive] Error 1
 
