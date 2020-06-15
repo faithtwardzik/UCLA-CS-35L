@@ -1,3 +1,9 @@
+# Assignment 3: Modifying and Rewriting Software
+# Grade Received: 95/100
+# If you found this file helpful, please consider reaching out to me:
+#   Website: faithtwardzik.com
+#   Insta: @faithtwardzik
+
 Q1)
 The patch improves the performance of ls. It improves the semantic performance
 of ls, because the syntax rules dictate that the second argument should 
