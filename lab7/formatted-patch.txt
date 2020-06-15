@@ -1,5 +1,11 @@
+Assignment 7: Basic Change Management
+Grade Received: 100/100
+If you found this file helpful, please consider reaching out to me:
+   Website: faithtwardzik.com
+   Insta: @faithtwardzik
+
 From f3a19cc4f41d368764eb6e46682d9cb4c14c9db3 Mon Sep 17 00:00:00 2001
-From: Faith Sara Twardzik <classtwa@lnxsrv09.seas.ucla.edu>
+From: Faith Twardzik <YOUR_USERNAME_HERE>
 Date: Tue, 25 Feb 2020 02:27:11 -0800
 Subject: [PATCH] Change ` to '
 
