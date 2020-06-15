@@ -1,0 +1,22 @@
+#!/usr/bin/bash
+
+ sed -e 's/<u>//g'  -e 's/?//g' -e 's/<\/u>//g' -e 's/-/ /g' |
+
+tr \` \' |
+
+tr '[:upper:]' '[:lower:]' |
+
+grep -E "^[ ]*<td[^>]*>[pk'mnwlhaeiou ]*</td>[ ]*$" |
+
+sed -e 's/<td>//g' -e 's/<\/td>//g' |
+
+sed -e 's/<td[^>]*>//g' |
+
+sed 's/ \{3,\}//g' |
+
+sed 's/ /\n/g' |
+
+sed '/^$/d' |
+
+sort -u
+

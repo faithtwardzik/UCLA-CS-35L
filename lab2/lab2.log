@@ -1,0 +1,230 @@
+To sort the words file and redirect it to the working directory, I used the
+commands: sort /usr/share/dict/words >words 
+
+Then, I used wget to download the HTML page, using the commands: 
+wget https://web.cs.ucla.edu/classes/winter20/cs35L/assign/assign2.html 
+
+Then, I began running the commands in the instructions on the assign2.html 
+file, and recording their output:  
+
+cat assign2.html | tr -c 'A-Za-z' '[\n*]' 
+
+The -c in this command uses the complement of the set. So basically, this took 
+the complement of the characters A-Z and a-z (so anything that was not A-Z or  
+a-z) and it inserted a newline (\n) in place of that character. Since the  
+first character was a '<' it inserted a newline. But when it hit DOCTYPE,  
+since these are A-Z characters, it left them.   
+
+cat assign2.html | tr -cs 'A-Za-z' '[\n*]' 
+The difference here is the -s, which gets rid of repeat occurrences of the  
+characters. So basically, this command turned everything that wasn't A-Z or  
+a-z into a newline (\n) EXCEPT if there were several of these characters in  
+a row, it got rid of the repeat occurrences of them, so there would only end  
+up being one and therefore only one newline. For example, after the first  
+'html' there is an '>' followed by an '<' but the output only gives one  
+newline here, because it gets rid of the '<' and only translates the '>' to  
+a newline.   
+
+cat assign2.html | tr -cs 'A-Za-z' '[\n*]' | sort 
+This command does the same thing as the one before it (removing repeat  
+occurrences of non-A-Z or a-z characters and translating them to newlines)  
+as well as sorting the output alphabetically by words, so all of the words  
+'a' are at the top, followed by 'A', then 'able' and so on, because of the  
+sort function.  
+
+cat assign2.html | tr -cs 'A-Za-z' '[\n*]' | sort -u 
+So this command does the same EXCEPT that when it sorts the words, the -u  
+option only keeps unique words, so any duplicates are removed from the  
+output. This is why although there were many 'a' characters in the output  
+from the last command, there is only one here.   
+
+cat assign2.html | tr -cs 'A-Za-z' '[\n*]' | sort -u | comm - words 
+So this adds the comm command, which compares the output of the previous piped 
+commands with the words file. The format of the resulting output is that it  
+gives words unique to the first file (assign2.html with its changes) in the  
+first column, prints out words unique to the second file (words) in the  
+second column, and prints out words that are in both lists in the third  
+column. For example, starting at line 10,450 'all' is in the third column,  
+'all-' is in the second, and 'All' is in the first.   
+
+cat assign2.html | tr -cs 'A-Za-z' '[\n*]' | sort -u | comm -23 - words  
+# ENGLISHCHECKER  
+The -23 option added to the comm command deletes both columns 2 (the words  
+unique to file 2, "words") and column 3 (the words included in both files),  
+leaving only column 1, which is a list of the unique words in file 1  
+(assign2.html after changes).  
+
+After this, I used wget to obtain a copy of the Hawaiian to English words:  
+wget https://www.mauimapp.com/moolelo/hwnwdshw.htm#1/ 
+
+I switched the names using: mv hwnwdshw.htm hwords  
+
+I began trying to remove ?, <u>, and </u> by using sed: 
+cat hwords | sed -e 's/<u>//g' -e 's/?//g' -e 's/</u>//g'
+  
+But the last expression kept returning an error, probably because of the 
+special / character. I realized that I could use \ as an escape character to 
+escape from the special meaning for /, so I updated the command to: 
+cat hwords | sed -e 's/<u>//g' -e 's/?//g' -e 's/<\/u>//g'  
+
+Then, I started trying to figure out how to isolate the HTML file so that we  
+would only return the pattern <td>(any number of characters here)</td>  
+because all of the Hawaiian dictionary words were in this pattern. I started  
+out using the tr -cs command like in the first section, but after trying out  
+a lot of combinations like:  
+tr -cs '<td>[A-Za-z]</td>' '[\n*]' 
+tr -cs '<td>[A-Za-z]*</td>' '[\n*]' 
+
+I just couldn't get the syntax right and realized it would be getting rid of  
+the words as well, and it was messing with the file's newlines. So instead, I  
+turned to using grep to search for the pattern. I started out with: 
+grep "<td>[A-Za-z]\+</td>" 
+
+This worked somewhat well, as it matched the <td>(one or more occurrences of  
+the letters here as directed by the + character)</td> pattern. However, this  
+did not work completely right, because it matched all English characters, not  
+just the Hawaiian characters, and left out words with ' in them. So I tried: 
+grep "<td>[A-Za-z\`]\+</td>"  
+
+I had to escape the '`' because it was a special character. This solved the  
+problem of not having the Hawaiian words with a grave (`) which we now have,  
+but we still have the English words too.   
+
+After this, I decided to use sed to remove all of the words with traditional  
+English characters, leaving only those with Hawaiian characters. However, 't'  
+and 'd' were included, and every line still has those in '<td>' so first, I  
+got rid of '<td>' and '</td>' using the commands: 
+sed -e 's/<td>//g' -e 's/<\/td>//g'   
+
+Then, we can get rid of all the English words using English-only characters  
+using the command: 
+sed '/[b-dfgjq-tvx-zB-DFGJQ-TVX-Z]/d'  
+
+The only remaining problem is that words such as "name" and "pineapple," which
+ are not Hawaiian, will still remain on the list because they do not contain  
+any English-only characters. However, the instructions said not to fix these  
+additional problems by hand.   
+
+Then, we can sort and get rid of duplicates by running the command: 
+sort -u  
+
+Then, I realized I wasn't done yet. I still had to convert the '`' (grave) to  
+''' apostrophes: 
+tr \` \'  
+
+And I had to convert any uppercase letters to lowercase: 
+tr [A-Z] [a-z]  
+
+And, there were some odd spaces at the beginning that I thought I should  
+delete: 
+sed 's/ //g'  
+
+At this point, I thought I was done. However, when I ran buildwords using: 
+cat hwords | ./buildwords >hwords_final 
+
+The hwords_final Hawaiian dictionary only came out with around 282 lines  
+(words), and piazza said we should be getting around 302. So I scoured  
+hwords, and realized my script was letting some Hawaiian words slip through,  
+namely those with the pattern " valign="top"" before the word. I fixed this  
+using: 
+grep -e "</td>$"  
+sed -e 's/ valign\=\"top\"//g'   
+
+At this point, I realized I also forgot to separate Hawaiian words with spaces
+in between so that they counted as separate words. I fixed this by revising  
+the end of my script to first get rid of the leading spaces: 
+sed 's/ \{3,\}//g'   
+
+And then, turning the additional spaces (which should now only be between  
+Hawaiian words, into newlines): 
+sed 's/ /\n/g'  
+
+The additional changes I made below, I made later. I isolated words that
+had a '-' in them using sed, then I used a regular expression with grep,
+as opposed to using sed, in order to isolate the pattern with <td>word
+</td> because this took care of the additional valign and align cases.
+Then I used sed to get rid of <tdW> at the beginning of the line, and 
+finally I deleted the pesky empty line at the beginning using sed. After
+these last minute changes, I was finished.
+
+This worked, giving me 301 lines when I ran it with hwords to create the  
+Hawaiian dictionary.  
+
+Finally, this gave us the below shell script:  
+
+#!/usr/bin/bash  
+
+sed -e 's/<u>//g' -e 's/?//g' -e 's/<\/u>//g' -e 's/-/ /g' |  
+
+tr \` \' |
+
+tr '[:upper:]' '[:lower:]' |
+
+grep -E "^[ ]*<td[^>]*>[pk'mnwlhaeiou ]*</td>[ ]*$" |
+
+sed -e 's/<td>//g' -e 's/<\/td>//g' |  
+
+sed -e 's/<td[^>]*>//g' | 
+
+sed 's/ \{3,\}//g' |  
+
+sed 's/ /\n/g' |  
+
+sed '/^$/d'
+
+sort -u  
+
+Then, I tried to run buildwords, but I had to change the execution permission  
+first: 
+chmod u+x buildwords  
+
+Then, I ran it with hwords, and it produced the correct output: 
+cat hwords | ./buildwords | less  
+
+Finally, I used buildwords to extract the Hawaiian dictionary words from  
+hwords: 
+cat hwords | ./buildwords > hwords_final  
+
+hwords_final is now our Hawaiian dictionary.  
+
+Next, I started working on the HAWAIIANCHECKER. We can start with the same  
+basic layout as the ENGLISHCHECKER and make some modifications, like  
+translating everything that is uppercase to lowercase: 
+tr -cs 'A-Za-z' '[\n*]' | tr 'A-Z' 'a-z' | sort -u | comm -23 - hwords 
+
+However, we could also just use the Hawaiian letters instead: 
+tr -cs "pk\'mnwlhaeiou" '[\n*]' | tr '[:upper:]' '[:lower:]' | sort -u |  
+comm -23 - hwords 
+
+That will be our final version of HAWAIIANCHECKER.  
+
+First, I ran both ENGLISHCHECKER and HAWAIIANCHECKER on assign2.html, the  
+website page: 
+cat assign2.html | tr -cs 'A-Za-z' '[\n*]' | sort -u | comm -23 - words | wc 
+This outputs 94 for the value of the first column, which is those words only  
+in the webpage (not in the dictionary, and therefore misspelled in English).  
+
+cat assign2.html | tr -cs "pk\'mnwlhaeiou" '[\n*]' | tr '[:upper:]'  
+'[:lower:]' | sort -u | comm -23 - hwords_final | wc 
+This outputs 228 for the number of misspelled Hawaiian words on the webpage. 
+I also ran the above command with 'cat hwords_final' as the first argument,  
+which outputed 0 misspelled words, as we would expect. 
+
+In order to find the number of words ENGLISHCHECKER reports as misspelled but  
+HAWAIIANCHECKER does not, I ran the two above commands again, but redirected  
+them to separate files: 
+cat assign2.html | tr -cs 'A-Za-z' '[\n*]' | sort -u | comm -23 - words >ECK  
+
+And then: 
+cat assign2.html | tr -cs "pk\'mnwlhaeiou" '[\n*]' | tr '[:upper:]'  
+'[:lower:]' | sort -u | comm -23 - hwords_final >HCK  
+
+Then, I compared the two files: cat ECK | comm -3 - HCK | wc 
+This outputted 88 misspelled English words that were unique to the English  
+words, and 222 misspelled Hawaiian words that were unique to the Hawaiian  
+words. For example, HAWAIIANCHECKER reports distinctly that the following  
+are misspelled: 'a', 'ail', and 'ailin'. Whereas, ENGLISHCHECKER distinctly  
+reports that the following are misspelled words: 'All', 'ALL', and  
+'Although'. I found these examples by running the last command without the  
+wc option, and then looking at the first couple words in each column: 
+cat ECK | comm -3 - HCK    

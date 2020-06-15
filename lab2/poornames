@@ -1,0 +1,94 @@
+#!/usr/bin/bash
+
+if [ $# -gt 2 ]
+then
+    echo "Too many arguments supplied" 1>&2
+    exit 1
+elif [[ $# -gt 1 ]] && [[ $1 != -r ]]
+then
+    echo "Too many arguments supplied" 1>&2
+    exit 1
+elif [ $# == 0 ]
+then
+    export arg=$(pwd)
+elif [[ $1 == -r ]] && [[ $# == 1 ]]
+then
+    export arg=$(pwd)
+elif [[ $1 == -r ]] && [[ $# == 2 ]]
+then
+    export arg=$2
+else
+    export arg=$1
+fi
+
+if [[ "$arg" =~ ^\- ]]
+then
+    echo "Invalid '-' in directory name" 1>&2
+    exit 1
+fi
+
+if [[ ! -d "$arg" ]]
+then 
+    echo "The directory $arg does not exist" 1>&2
+    exit 1
+fi  
+  
+if [[ -L "$arg" ]]
+then
+    echo "The directory $arg is a symbolic link" 1>&2
+    exit 1
+fi
+
+if [[ ! -r "$arg" ]]
+then
+    echo "No read permission for $arg" 1>&2
+fi
+
+
+checkdir () {
+
+export firstlist=$(find "$1" -mindepth 1 -maxdepth 1 -type d |
+sed 's|.*/||g' |  
+grep -E -e "[^A-Z_a-z.-]" -e "^\-" \
+-E -e "^\.{1}[^.]{1}.{1,}$" -e "^\.{1}[.]{1}.{1,}$" \
+-e "^\.{1}[^.]{1,}" -e ".{15,}" | 
+sed -e 's|$|\/|g' | sed -e 's|^|\/|g') 
+
+export secondlist=$(find "$1" -maxdepth 1 -not -type d | 
+sed 's|.*/||g' |
+grep -E -e "[^A-Z_a-z.-]" -e "^\-" -E -e "^\.{1}[^.]{1}.{1,}$" \
+-e "^\.{1}[.]{1}.{1,}$" -e "^\.{1}[^.]{1,}" -e ".{15,}" | 
+sed -e 's|^|\/|g') 
+
+export thirdlist=$(find "$1" -mindepth 1 -maxdepth 1 -type d | 
+sed 's|.*/||g' |
+sort -f | uniq -i -D | 
+sed -e 's|$|\/|g' | sed -e 's|^|\/|g')
+
+export fourthlist=$(find "$1" -maxdepth 1 -not -type d | 
+sed 's|.*/||g' | 
+sort -f | uniq -i -D |
+sed -e 's|^|\/|g')
+
+export entirelist="$firstlist"$'\n'"$secondlist"$'\n'"$thirdlist"$'\n'"$fourthlist"
+
+echo "$entirelist" | sort | uniq | 
+sed -e 's|^/|'"$1"'/|g' -e 's|//|/|g' -e '/^$/d' 
+
+}
+
+if [[ "$1" != -r ]]
+then
+
+checkdir "$arg" 
+
+elif [[ "$1" == -r ]]
+then
+
+ export -f checkdir
+ find "$arg" -type d -exec sh -c "checkdir '{}'" \;
+
+fi
+
+
+
