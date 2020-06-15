@@ -1,3 +1,9 @@
+Assignment 1: Getting to Know Your System
+Grade Received: 98/100
+If you found this file helpful, please consider reaching out to me:
+  Website: faithtwardzik.com
+  Insta: @faithtwardzik
+  
 1. Keystrokes used to discover the answer: man man RET q man -k to
 Answer: The shell command -- man -k keyword -- where keyword is a specific word you're searching for in man page description sections, will print out all the commands with that keyword.
 
