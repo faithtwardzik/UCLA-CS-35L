@@ -1,3 +1,9 @@
+Assignment 5: System Call Programming and Debugging
+Grade Received: 97/100
+If you found this file helpful, please consider reaching out to me:
+  Website: faithtwardzik.com
+  Insta: @faithtwardzik
+
 Lab 5 Log 
 
 1. First, I had to figure out how to extract the number of arguments and
