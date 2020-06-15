@@ -1,3 +1,11 @@
+/* 
+Assignment 4: C Programming and Debugging
+Grade Received: 92/100
+If you found this file helpful, please consider reaching out to me:
+	Website: faithtwardzik.com
+	Insta: @faithtwardzik
+*/
+
 #include <stdlib.h>
 #include <stdio.h>
 
