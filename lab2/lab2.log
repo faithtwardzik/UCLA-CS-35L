@@ -1,3 +1,9 @@
+# Assignment 2: Shell Scripting
+# Grade Received: 97/100
+# If you found this file helpful, please consider reaching out to me:
+#   Website: faithtwardzik.com
+#   Insta: @faithtwardzik
+
 To sort the words file and redirect it to the working directory, I used the
 commands: sort /usr/share/dict/words >words 
 
