@@ -1,0 +1,194 @@
+Lab 4 Log
+
+First, I transferred the tar ball over using FileZilla, and untar-ed it:
+tar -xvf coreutils-with-bug.tar.gz
+
+Then I made a temporary directory for installation:
+mkdir temp_dir
+
+And I installed the new version of coreutils:
+./configure --prefix=/u/eng/class/classtwa/Desktop/35L/lab4/temp_dir
+PREFIX=/u/eng/class/classtwa/Desktop/35L/lab4/temp_dir make
+
+However, the make command outputted the following errors because of a 
+redeclaration of futimens:
+In file included from utimecmp.c:41:0:
+utimens.h:2:5: error: conflicting types for 'futimens'
+ int futimens (int, char const *, struct timespec const [2]);
+     ^
+In file included from utimecmp.h:25:0,
+                 from utimecmp.c:25:
+/usr/include/sys/stat.h:373:12: note: previous declaration of 'futimens' was 
+here
+ extern int futimens (int __fd, const struct timespec __times[2]) __THROW;
+            ^
+So, I applied the patch by transferring it over to the coreutils-with-bug 
+directory using FileZilla, then using the command:
+patch -p0 < coreutils.diff
+
+The patching process was successful, so I tried to make the installation again:
+PREFIX=/u/eng/class/classtwa/Desktop/35L/lab4/temp_dir make
+
+This time, make was successful. If we take a look at the patch, it was because
+several files had definitions and/or function calls that were named 
+incorrectly. For example, 'futimens' was changed to 'coreutils_futimens' 
+everywhere that it was used. 
+
+Then, I ran the make install command:
+PREFIX=/u/eng/class/classtwa/Desktop/35L/lab3/temp_dir make install
+
+This did not work. It outputted a permission denied error, for modifying 
+/usr/local/bin files. To fix these errors, I moved my coreutils-with-bug 
+directory to ~/bin, where coreutils-8.29 was stored in the last lab:
+mv coreutils-with-bug ~/bin
+cd ~/bin/coreutils-with-bug
+
+Then, I ran the make install command again:
+PREFIX=/u/eng/class/classtwa/Desktop/35L/lab3/temp_dir make install
+
+This time, the installation worked without any errors. 
+
+Then, I attempted to reproduce the bug by using the following commands:
+tmp=$(mktemp -d)
+cd $tmp
+touch -d '1918-11-11 11:00 GMT' wwi-armistice-cs35L
+touch now
+sleep 1
+touch now1
+TZ=UTC0 ~/Desktop/35L/lab4/temp_dir/bin/ls -lt --full-time wwi-armistice-cs35L 
+now now1
+cd
+rm -fr $tmp
+
+This outputted the following buggy listing, where wwi-armistice-cs35L is 
+treated as if it was created after now and now1:
+-rw-r--r-- 1 classtwa class 0 1918-11-11 11:00:00.000000000 +0000 
+wwi-armistice-cs35L
+-rw-r--r-- 1 classtwa class 0 2020-02-02 22:55:44.678742037 +0000 now1
+-rw-r--r-- 1 classtwa class 0 2020-02-02 22:55:43.673724480 +0000 now
+
+Then, I ran this ls under gdb to try and find the error:
+gdb ~/bin/coreutils-with-bug/src/ls
+Ctrl-x 2 # this includes source code
+
+However, many of the debugging symbols weren't showing up, so I ran 
+./configure, make, and make install again, this time with the -g O0 options, 
+so that nothing was accidentally optimized out. 
+
+In the meantime, I took a look at the source code ls.c, to see if anything
+stood out. We're looking at an error with time, so I searched for functions
+that dealt with time, and came up with the following three functions:
+cmp_mtime
+cmp_ctime
+cmp_atime
+
+I figured the bug might be in one of these functions, so when I reran gdb
+with the buggy version of ls, I put breakpoints at these functions:
+b cmp_mtime
+b cmp_ctime
+b cmp_atime
+
+And then I ran it:
+r -lt
+
+It seems, the only one of these functions that is hit is cmp_mtime, so when 
+the execution stopped at cmp_mtime, I stepped into the function:
+si
+
+And I continued to step, using s (or n when in another function), until I 
+found something that looked a little odd. When execution stopped at the 
+beginning of the call to timespec_cmp, I printed out the passed-in arguments:
+p a
+p b
+And these gave me the following extremely large values for a.tv_sec and 
+b.tv_sec:
+1126300188
+1131101910
+
+It's entirely possible that this is the problem. ls -lt is running on 
+/coretils-with-bug/src, whose times are going to be relatively recent. So if
+we were to have a much older file, about a century old, it makes sense to 
+assume that this value for seconds would cause integer overflow when the 
+subtraction (int diff = a.tv_sec - b.tv_sec) occurs later on in the 
+timespec_cmp function. 
+
+So, I took a look at the source code for timespec.h, where the timespec_cmp
+function was defined:
+vi ~/bin/coreutils-with-bug/lib/timespec.h
+
+The problem seemed to be the line:
+int diff = a.tv_sec - b.tv_sec
+
+If we used comparison operators instead of arithmetic, then we wouldn't have 
+to deal with potential overflow during the arithmetic operation. So, I copied
+the timespec.h file into a temp_dir, so I could edit it:
+cp timespec.h ~/bin/coreutils-with-bug/temp_dir/timespec.h
+
+Then, I moved into the temp_dir and opened up the copy of timespec.h. In it,
+I editted the body of the timespec_cmp function to contain only the following:
+if (a.tv_sec > b.tv_sec)
+    return 1;
+  else if (a.tv_sec == b.tv_sec)
+    return 0;
+  else
+    return -1;
+
+This satisfies the comment at the top of the function:
+Return negative, zero, positive if A < B, A == B, A > B, respectively.
+And does it in a way that no longer has the possibility of overflowing.
+
+After making these changes, I created a diff file for patching the original
+timespec.h file:
+diff -u ~/bin/coreutils-with-bug/lib/timespec.h timespec.h > lab4.diff
+
+And I moved the lab4.diff file into the directory that contains the original
+timespec.h:
+mv lab4.diff ~/bin/coreutils-with-bug/lib/lab4.diff
+
+After which, I ran the patch command:
+patch -p0 < lab4.diff
+
+After this, I ran 'make' again in coreutils-with-bug. I checked the original
+timespec.h file, which now has the changes we made. Then, I ran the same
+commands given to us to see if the bug had been fixed:
+tmp=$(mktemp -d)
+cd $tmp
+touch -d '1918-11-11 11:00 GMT' wwi-armistice-cs35L
+touch now
+sleep 1
+touch now1
+TZ=UTC0 ~/bin/coreutils-with-bug/src/ls -lt --full-time wwi-armistice-cs35L 
+now now1
+
+This outputted the correct results, with wwi-armistice-cs35L showing up as the
+oldest file, with a correct timestamp of 1918:
+-rw-r--r-- 1 classtwa class 0 2020-02-03 22:36:29.034240150 +0000 now1
+-rw-r--r-- 1 classtwa class 0 2020-02-03 22:36:28.031222750 +0000 now
+-rw-r--r-- 1 classtwa class 0 1918-11-11 11:00:00.000000000 +0000 
+wwi-armistice-cs35L
+
+Then, I reproduced the past cases using the regularly-installed ls, to see if
+there are any bugs in the coreutils ls that we use normally. First, I ran it
+using the $tmp directory, and it worked as we would expect:
+-rw-r--r-- 1 classtwa class 0 2020-02-04 05:27:29.638673128 +0000 now1
+-rw-r--r-- 1 classtwa class 0 2020-02-04 05:27:28.633655673 +0000 now
+-rw-r--r-- 1 classtwa class 0 1918-11-11 11:00:00.000000000 +0000 
+wwi-armistice-cs35L
+
+However, when I ran it in one of my normal directories, the output was not
+correct:
+-rw-r--r-- 1 classtwa class 0 2054-12-17 17:28:16.000000000 +0000 
+wwi-armistice-cs35L
+-rw-r--r-- 1 classtwa class 0 2020-02-03 23:48:46.248486000 +0000 now1
+-rw-r--r-- 1 classtwa class 0 2020-02-03 23:48:45.244483000 +0000 now
+
+It still shows up as having been created in the future (2054) instead of the
+past. So coreutils is still somewhat buggy, albeit less so than the old 
+version.
+
+
+
+
+
+
+
