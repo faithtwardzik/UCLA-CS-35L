@@ -1,0 +1,105 @@
+Lab 9 Log
+
+1) I used the command:
+ssh-keygen
+Then, I pressed enter, and it saved the key to: /u/eng/class/classtwa/.ssh/id_rsa
+After this, I entered a passphrase: (I won't put it here for security reasons)
+It ouputted the following:
+
+Your identification has been saved in /u/eng/class/classtwa/.ssh/id_rsa.
+Your public key has been saved in /u/eng/class/classtwa/.ssh/id_rsa.pub.
+The key fingerprint is:
+SHA256:gvykyRdFvwrD62V3CimdLc6gMfyIfRcb71tKRE9bGIY classtwa@lnxsrv09.seas.ucla.edu
+The key's randomart image is:
++---[RSA 2048]----+
+|        .  .o    |
+|       . .E. o   |
+|        . o o .  |
+|   . o . . + o   |
+|    o B S o o    |
+|   o = Bo*       |
+|    B * X=+ o    |
+|   o O.Bo=.=     |
+|  . +.o.o.=.     |
++----[SHA256]-----+
+
+I then ran the following commands and it gave the following output:
+ssh-keygen -l
+Enter file in which the key is (/u/eng/class/classtwa/.ssh/id_rsa):
+2048 SHA256:gvykyRdFvwrD62V3CimdLc6gMfyIfRcb71tKRE9bGIY classtwa@lnxsrv09.seas.ucla.edu
+
+I copied over the contents of .ssh/id_rsa.pub to the file .ssh/authorized_keys.
+
+Then I used the following commands:
+ssh-copy-id classtwa@lnxsrv09.seas.ucla.edu
+This gave the output:
+/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/u/eng/class/classtwa/.ssh/id_rsa.pub"
+/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+classtwa@lnxsrv09.seas.ucla.edu's password:
+
+I inputted my password here. Then it outputted:
+
+Number of key(s) added: 1
+
+Now try logging into the machine, with:   "ssh 'classtwa@lnxsrv09.seas.ucla.edu'"
+and check to make sure that only the key(s) you wanted were added.
+
+After this, I ran the following command and it outputted:
+ssh classtwa@lnxsrv09.seas.ucla.edu
+Enter passphrase for key '/u/eng/class/classtwa/.ssh/id_rsa':
+ 
+However, it wanted a passphrase. So then, I used the commands:
+eval $(ssh-agent)
+
+This outputted:
+Agent pid 30314
+
+I ran:
+ssh-add
+
+It outputted:
+Enter passphrase for /u/eng/class/classtwa/.ssh/id_rsa:
+Identity added: /u/eng/class/classtwa/.ssh/id_rsa (/u/eng/class/classtwa/.ssh/id_rsa)
+
+Finally, when I ssh'ed, using the below command, it did not prompt for a login
+or password or passphrase:
+ssh classtwa@lnxsrv09.seas.ucla.edu
+
+2) On XQuartz, I used the command:
+ssh -X classtwa@lnxsrv09.seas.ucla.edu
+
+Then, I logged in, and ran the command 'xeyes', which outputted a graphical
+display of the roaming eyes. 
+
+3) I opened up the config file:
+emacs ~/.ssh/config
+
+Then, I editted it as follows:
+Host lnxsrv
+     HostName lnxsrv08.seas.ucla.edu
+     User classtwa
+
+Host seven
+     ProxyCommand ssh -q lnxsrv nc lnxsrv07.seas.ucla.edu 22
+
+And finally I ran it by ssh'ing into the nicknamed 'lnxsrv':
+ssh lnxsrv
+
+This prompted me for the passphrase I set up, and connected me to lnxsrv08.
+
+Then, I tried the multihop, by ssh'ing into the nicknamed 'seven':
+ssh seven
+
+This worked, hopping from a connection to lnxsrv08 to a connection to
+lnxsrv07. 
+
+Previously, when I ssh'ed into other servers, using:
+ssh lnxsrv07.seas.ucla.edu
+This did require a password.
+
+However, with the -A option because of the authentication agent forwarding,
+no password was necessary.
+
+
+
