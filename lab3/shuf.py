@@ -1,3 +1,9 @@
+# Assignment 3: Modifying and Rewriting Software
+# Grade Received: 95/100
+# If you found this file helpful, please consider reaching out to me:
+#   Website: faithtwardzik.com
+#   Insta: @faithtwardzik
+
 import sys
 import random
 import argparse
