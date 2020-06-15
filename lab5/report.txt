@@ -1,0 +1,396 @@
+Lab 5 Log 
+
+1. First, I had to figure out how to extract the number of arguments and
+the arguments themselves, that the user inputted. I found this in the
+argc and arv[] implementaton, where main takes in an int argc and char* 
+argv[], with the former the number of arguments and the latter an array
+of the arguments (with the first argument as argv[1], not argv[0], which is
+confusing). 
+
+I then wrote the error conditions, if there were less or more arguments
+than 3, if the length of the first argument did not equal the length of the
+second argument (using strlen()), and finally I wrote up a nested for loop
+to check for duplicates, where it iterated through the first set, and for 
+each char checked if there was a duplicate of that char in the rest of the
+set.
+
+After this, I implemented a loop on the condition that getchar() didn't
+return EOF, and in this while loop, I used a for loop to iterate through
+the first set. If the current character equaled a character in the first
+set, then putchar the corresponding character in set 2. If the character
+was not in set 1, then I set a char condition and putchar that char outside
+of the loop.
+
+2. Basically, tr2u.c was much the same as tr2b.c, except using the system
+calls read() and write() instead of getchar() and putchar(). All of my 
+error conditions were the same.
+
+Then, I had a while loop on the condition that read(), when called
+on the standard input (STDIN_FILENO), taking in and storing one char 
+(&curr_char) was greater than zero (if it was zero, this would signal the
+end of stdin). After this I had a basically identical for loop to tr2u.c, 
+where I checked if the curr_char equaled any of the characters in set 1,
+and if it did, I would write to standard output (STDOUT_FILENO), the 
+corresponding value in set 2 (&set2[i]), then set my char flag. If not,
+then outside of the loop I would write to standard output the current
+char.
+
+Both of the above programs, when compiled, have the same output!
+
+3. To create a large file of at least 5,000,000 bytes, I used the following 
+command:
+dd if=/dev/zero of=large_file bs=5000K count=1
+
+This created an output file named large_file with 5,120,000 bytes in it. 
+
+Next, we want to use strace to compare the numbers of system calls issued
+by tr2b and tr2u comparatively. I used man strace to figure out that the
+-c option would only output a concise list of the system calls, errors,
+and times. I made a new file for the output of tr2b/tr2u usage, using 
+'touch test_ouput'. For a), copying one file to another, I used the 
+following command to get the system calls of tr2b:
+
+strace -c ./tr2b abc def < large_file > test_output
+
+This outputted the following table:
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 73.49    0.016073          26       625           write
+ 21.83    0.004775           8       627           read
+  1.52    0.000333          37         9           mmap
+  0.99    0.000217          54         4           mprotect
+  0.71    0.000155          39         4           fstat
+  0.45    0.000098          98         1           munmap
+  0.37    0.000080          40         2           open
+  0.30    0.000065          33         2           close
+  0.20    0.000043          43         1         1 access
+  0.14    0.000031          31         1           arch_prctl
+  0.00    0.000000           0         1           brk
+  0.00    0.000000           0         1           execve
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.021870                  1278         1 total
+
+Notably, there were 1,278 system calls.
+
+Then, I did this for tr2u:
+
+strace -c ./tr2u abc def < large_file > test_output2
+
+After running for quite a while, it outputted the following table:
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 55.12   23.506957           5   5120000           write
+ 44.88   19.136584           4   5120002           read
+  0.00    0.000000           0         2           open
+  0.00    0.000000           0         2           close
+  0.00    0.000000           0         2           fstat
+  0.00    0.000000           0         7           mmap
+  0.00    0.000000           0         4           mprotect
+  0.00    0.000000           0         1           munmap
+  0.00    0.000000           0         1           brk
+  0.00    0.000000           0         1         1 access
+  0.00    0.000000           0         1           execve
+  0.00    0.000000           0         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00   42.643541              10240024         1 total
+
+Astonishingly, there were 10,240,024 system calls, which is why it took 
+several minutes to run strace on. 
+
+For b), we are required to copy a file to the terminal, so I did that next.
+For tr2b, I used the command:
+
+strace -c ./tr2b abc def < large_file >&1
+
+This outputted the following:
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 91.67    0.015621           3      5000           write
+  8.33    0.001420           2       627           read
+  0.00    0.000000           0         2           open
+  0.00    0.000000           0         2           close
+  0.00    0.000000           0         4           fstat
+  0.00    0.000000           0         9           mmap
+  0.00    0.000000           0         4           mprotect
+  0.00    0.000000           0         1           munmap
+  0.00    0.000000           0         1           brk
+  0.00    0.000000           0         1         1 access
+  0.00    0.000000           0         1           execve
+  0.00    0.000000           0         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.017041                  5653         1 total
+
+Where the system calls equal 5,653.
+
+For tr2u, I used the command:
+
+ strace -c ./tr2u abc def < large_file >&1
+
+This outputted the following:
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 56.85   27.124992           5   5120000           write
+ 43.15   20.589929           4   5120002           read
+  0.00    0.000000           0         2           open
+  0.00    0.000000           0         2           close
+  0.00    0.000000           0         2           fstat
+  0.00    0.000000           0         7           mmap
+  0.00    0.000000           0         4           mprotect
+  0.00    0.000000           0         1           munmap
+  0.00    0.000000           0         1           brk
+  0.00    0.000000           0         1         1 access
+  0.00    0.000000           0         1           execve
+  0.00    0.000000           0         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00   47.714921              10240024         1 total
+
+This is the same number of system calls that were issued by tr2u on a file.
+
+4. Then, I used the time command to get the time elapsed when running
+these four commands:
+
+time ./tr2b abc def < large_file > test_output
+
+I ran this three times, to get a reliable set of times, with the output 
+below:
+real    0m0.271s
+user    0m0.216s
+sys     0m0.010s
+
+real    0m0.271s
+user    0m0.212s
+sys     0m0.013s
+
+real    0m0.272s
+user    0m0.215s
+sys     0m0.011s
+
+Then I did the same for tr2u:
+
+time ./tr2u abc def < large_file > test_output2
+
+For each of the three runs, this outputted:
+
+real    0m13.520s
+user    0m3.392s
+sys     0m10.082s
+
+real    0m13.230s
+user    0m3.598s
+sys     0m9.583s
+
+real    0m14.012s
+user    0m3.547s
+sys     0m10.418s
+
+Then, I ran the times for tr2b and tr2u when copying to the terminal:
+
+For tr2b, this outputted:
+real    0m1.783s
+user    0m0.265s
+sys     0m0.027s
+
+real    0m2.484s
+user    0m0.266s
+sys     0m0.025s
+
+real    0m1.190s
+user    0m0.268s
+sys     0m0.023s
+
+For tr2u, this outputted:
+real    0m12.461s
+user    0m3.481s
+sys     0m8.968s
+
+real    0m13.181s
+user    0m3.661s
+sys     0m9.507s
+
+real    0m12.676s
+user    0m3.532s
+sys     0m9.132s
+
+From studying these times and the number of system calls from part 3, we can
+see that using the getchar()/putchar() I/O buffer method is much more time 
+efficient as well as system-call efficient. This is because calls are made
+on the entire buffer of input that the user inputted to the program, whereas 
+with the manual system calls read() and write(), calls were made on every 
+single char that needed to be extracted (every single byte, which is why we 
+see that the number of system calls was 10,240,024, because this is two 
+times the number of bytes in the file, and there were two system calls for 
+each byte -- read() and write()), resulting in a significantly higher number 
+of system calls (about 8,000% more than with tr2b). Similarly, because
+system calls take so long, tr2u took much more time, about 50x longer. For
+such a seemingly small change in the code, the efficiency was significantly
+affected. System calls should be avoided for performance reasons, if possible.
+
+Homework
+
+I wrote up a little program, writelines.c, to create text files of 0, 100, 
+1000, and 1000000 lines, with each line being the standard example from 
+lab4: 
+*~BO *{_CIA *hXE]D *LER #@_GZY #E\\OX #^BO #FKPS #NEM\4
+
+The mini program I wrote is below:
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+int main() {
+
+  FILE *fp;
+  fp = fopen("testf_100", "w");
+  int i = 0;
+  for (; i < 100; i++) {
+  fprintf(fp, "*~BO *{_CIA *hXE]D *LER #@_GZY #E\\OX #^BO #FKPS #NEM\4 ");
+  }
+  fclose(fp);
+
+  FILE *fp2;
+  fp2 = fopen("testf_1000", "w");
+  int j = 0;
+  for (; j < 1000; j++) {
+  fprintf(fp2, "*~BO *{_CIA *hXE]D *LER #@_GZY #E\\OX #^BO #FKPS #NEM\4 ");
+  }
+  fclose(fp2);
+
+  FILE *fp3;
+  fp3 = fopen("testf_1000000", "w");
+  int k = 0;
+  for (; k < 1000000; k++) {
+  fprintf(fp3, "*~BO *{_CIA *hXE]D *LER #@_GZY #E\\OX #^BO #FKPS #NEM\4 ");
+  }
+  fclose(fp3);
+
+}
+
+Then, I ran time with sfrobu, sfrob, and sfrobu -f with each of these files
+as input, and recorded the times below:
+
+time ./sfrobu < testf_0
+real    0m0.002s
+user    0m0.001s
+sys     0m0.000s
+
+time ./sfrobu < testf_100
+real    0m0.016s
+user    0m0.004s
+sys     0m0.011s
+
+time ./sfrobu < testf_1000
+real    0m0.147s
+user    0m0.040s
+sys     0m0.099s
+
+time ./sfrobu < testf_1000000
+real    2m22.708s
+user    0m51.805s
+sys     1m30.317s
+
+time ./sfrobu -f < testf_0
+real    0m0.002s
+user    0m0.000s
+sys     0m0.001s
+
+time ./sfrobu -f < testf_100
+real    0m0.016s
+user    0m0.004s
+sys     0m0.012s
+
+time ./sfrobu -f < testf_1000
+real    0m0.148s
+user    0m0.044s
+sys     0m0.103s
+
+time ./sfrobu -f < testf_1000000
+real    2m33.165s
+user    0m55.402s
+sys     1m36.967s
+
+time ./sfrob < testf_0
+real    0m0.002s
+user    0m0.000s
+sys     0m0.001s
+
+time ./sfrob < testf_100
+real    0m0.004s
+user    0m0.002s
+sys     0m0.001s
+
+time ./sfrob < testf_1000
+real    0m0.014s
+user    0m0.010s
+sys     0m0.002s
+
+time ./sfrob < testf_1000000
+real    0m31.947s
+user    0m14.544s
+sys     0m0.926s
+
+The differences here are quite astonishing. For low file size, such as those
+with 0 or 100 lines, there is no very significant difference between sfrobu
+and sfrob. However, with the file of 1,000,000 lines, sfrobu was about 470%
+slower than sfrob. This is an especially significant difference in
+efficiency. 
+
+I did a bit of analysis, and got that there is a time increase of about
+0.000032 - 0.0000111 seconds per added line, with an average of 0.000021
+seconds, for sfrob. For sfrobu, there is a time increase of about 0.000153
+- 0.00013 seconds per added line, with an average of 0.00014 seconds. This
+is much higher than that of sfrob. 
+
+For the next part, I ran strace on some smaller files to see what syscalls
+might be linked to malloc and realloc. When we run a small file, there isn't
+anything indicative:
+usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 57.10    0.030016           6      5400           write
+ 42.79    0.022494           4      5403           read
+  0.03    0.000017           6         3           open
+  0.02    0.000012           3         4           brk
+  0.02    0.000010           5         2           munmap
+  0.02    0.000008           3         3           close
+  0.01    0.000006           1         8           mmap
+  0.01    0.000004           1         4           fstat
+  0.00    0.000000           0         4           mprotect
+  0.00    0.000000           0         1         1 access
+  0.00    0.000000           0         1           execve
+  0.00    0.000000           0         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.052567                 10834         1 total
+
+However, when we run a larger file, the relative frequencies of these 
+syscalls shift. I ran testf_1000 next:
+usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 59.50    0.297070           6     54000           write
+ 40.45    0.201959           4     54003           read
+  0.02    0.000093           4        22           brk
+  0.01    0.000044           6         8           mmap
+  0.01    0.000035           9         4           mprotect
+  0.00    0.000017           6         3           open
+  0.00    0.000016           4         4           fstat
+  0.00    0.000013           7         2           munmap
+  0.00    0.000009           9         1         1 access
+  0.00    0.000008           8         1           execve
+  0.00    0.000007           2         3           close
+  0.00    0.000003           3         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.499274                108052         1 total
+
+Using what we already know about malloc and realloc (that they use brk
+and sbrk to ask the kernel to allocate additional heap space to them, and 
+that mmap does something similar for large sizes), we can see this in the 
+numbers. As the number of lines, and bytes that needed to be read in using
+malloc increased, the syscall brk had to be called more times than when 
+testf_100 was the input. This is the same with mmap. Since the size of the
+input file directly affects the "amount" of mallocing (in size), it seems
+safe to say that brk and mmap are syscalls intrinsic to malloc and realloc.
+brk takes in a void* to the end of a data segment, essentially setting the
+end of the heap allocated to that program at that position. sbrk is similar,
+though as a wrapper, it allows you to specify the amount of bytes of 
+additional heap space that you would like from the brk syscall. mmap is a 
+little bit different, where it allows you to specify a starting point in
+the virtual address space of a process and allows you to specify a size or
+length of bytes for that mapping. This would be good for large allocations.
