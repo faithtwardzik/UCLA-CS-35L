@@ -1,6 +1,12 @@
+# Assignment 2: Shell Scripting
+# Grade Received: 97/100
+# If you found this file helpful, please consider reaching out to me:
+#   Website: faithtwardzik.com
+#   Insta: @faithtwardzik
+
 #!/usr/bin/bash
 
- sed -e 's/<u>//g'  -e 's/?//g' -e 's/<\/u>//g' -e 's/-/ /g' |
+sed -e 's/<u>//g'  -e 's/?//g' -e 's/<\/u>//g' -e 's/-/ /g' |
 
 tr \` \' |
 
