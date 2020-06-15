@@ -1,0 +1,121 @@
+Lab 8 Log
+
+1) I first cd'ed into the directory:
+cd ~eggert/src/gnu/emacs-CS-35L
+Then, I ran the command:
+du -c -sch ./.git
+This outputted the following total disk space used for the git repository:
+350M
+If we run the following command: 
+du -c
+And scroll to the ./.git directory, the total number of disk space used for
+the git repository is actually:
+358316
+
+Then, I ran the command:
+du -c
+This outputted the following total disk space used for all of the files in
+the directory:
+520828
+
+To get the total number for working files in the directory, we can subtract
+the total files - the ./.git files, which gives us:
+520828 - 358316 = 162512
+
+I used the following command:
+du -a ./.git | sort -n
+
+This outputted a sorted list with the files in ./.git and their disk sizes.
+The one with the largest size is:
+318152  ./.git/objects/pack/pack-24e56b1749b9320c560213d9045fa6cee42b4174.pack
+
+It makes sense that a pack file such as this would be so large, because 
+packfiles include many objects, and objects include commits, trees, blobs,
+etc, which altogether take a significant amount of space.  
+
+2) I used the command:
+git branch -r | wc -l 
+This outputted the number of remote branches, which was 177.
+
+Then, I used the command:
+git branch -a | wc -l
+This outputted all branches, which was 353.
+
+This means that the number of local branches is all branches - the remote 
+branches, which gives us 353 - 177 = 176 local branches.
+
+3) I used the command:
+git remote
+This gave me one remote repository: origin.
+
+Then, I ran the command:
+git remote show origin
+This outputted the fetch URL, where the remote repository is:
+https://git.savannah.gnu.org/git/emacs.git
+
+4) I ran the following command:
+git for-each-ref --sort=-committerdate refs/heads/
+
+This will sort the refs based on the last date a commit was made. The most
+recent ten branches with commits (with the most recent first) were (in the 
+format of the commit hash, then the branch name):
+
+5448c0cce64b7f5277c820dcd3cd839f9388e241 commit refs/heads/other-branches/miles-orphaned-changes
+f4c1c47c5b311c19b4cd0c3296783fc83b6c19b9 commit refs/heads/old-branches/branch-5_8
+71c9ec5139c8cacdcdcc499a72f3800f1b84000a commit refs/heads/other-branches/gerd_0001
+f57c4de274087f802f52587b362acc2cee4c7833 commit refs/heads/other-branches/custom_themes
+f1f65349f47be2982fc2dfb3847c730e520703f6 commit refs/heads/other-branches/gerd_int
+1cda365bcc8ffdc03ea705be1ca0860e56149944 commit refs/heads/old-branches/gerd_defvaralias
+086514436a4cbc004a43a4ab331e29e3ad9da835 commit refs/heads/other-branches/patches_21_0
+3efcf1ddcd36f63a94845e8df2135ad02706fe8e commit refs/heads/other-branches/gerd_big
+f0643701da91a91f0c36dc356e00070f38af9ebe commit refs/heads/other-branches/gerd_dbe
+2c92b538e6b484cc731fa8d2225ed16459e9848c commit refs/heads/other-branches/fx-branch
+
+5) I ran the following command:
+git rev-list master | wc -l
+
+This outputted the number of commits from the master branch, which was:
+139583
+
+6) I used the following command:
+git log | wc -l 
+
+This outputted the number of total commits, which was:
+1240390
+
+Therefore, the ratio of the commits from the master branch to all of the 
+commits is: 139583 / 1240390 = 0.1125, which is about 11.25%. 
+
+7) I used the following command:
+git log master --after=2013 --format=format:"%an" > ~/Desktop/35L/lab8/testing
+
+This redirected to a file, the list of commits on the master branch after 2013,
+with each entry being just the author of the commit's name.
+
+Then, I used the command:
+sort testing | uniq --count | sort -nr > testnums
+
+This outputted a sorted list of the authors' names' duplicates, sorted by
+the frequency of the count of each author's name. The authors with the top
+ten frequencies of commits were (with the number of commits on the left):
+   3627 Eli Zaretskii
+   3526 Paul Eggert
+   3426 Glenn Morris
+   1806 Lars Ingebrigtsen
+   1725 Stefan Monnier
+   1513 Michael Albinus
+    611 Dmitry Gutov
+    576 Noam Postavsky
+    465 Alan Mackenzie
+    455 Juri Linkov
+
+8) I used the following command:
+git log --merges > ~/Desktop/35L/lab8/q8
+
+This redirected a list of the merge commits to this file. Then, I opened
+up the file in Emacs and used C-s to search for the hashes provided on the 
+specification page. If there was a match, that meant the commit was a merge
+commit. The following came up as matches, and are therefore merge commits:
+0c06b93c1e467debd401eb0b3be4652fde14fa95
+abcb2e62dae6aa26308f7ac9efc89247f89cbe65
+98ac36efe4ce4bd3a0bca76fc73ce6c7abaa4371
