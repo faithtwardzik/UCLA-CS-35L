@@ -1,3 +1,11 @@
+/* 
+Assignment 5: System Call Programming and Debugging
+Grade Received: 97/100
+If you found this file helpful, please consider reaching out to me:
+    Website: faithtwardzik.com
+    Insta: @faithtwardzik
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
