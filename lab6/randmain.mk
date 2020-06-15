@@ -1,3 +1,11 @@
+/*
+Assignment 6: Dynamic Linking
+Grade Received: 90/100
+If you found this file helpful, please consider reaching out to me:
+	Website: faithtwardzik.com
+	Insta: @faithtwardzik
+*/
+
 randcpuid.o: randcpuid.h randcpuid.c
 	$(CC) $(CFLAGS) -c randcpuid.c -o randcpuid.o
 
