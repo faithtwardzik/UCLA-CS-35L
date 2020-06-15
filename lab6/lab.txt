@@ -1,3 +1,9 @@
+Assignment 6: Dynamic Linking
+Grade Received: 90/100
+If you found this file helpful, please consider reaching out to me:
+	Website: faithtwardzik.com
+	Insta: @faithtwardzik
+
 Lab 6 Log
 
 1) I transferred simpgmp.c over to Seasnet using FileZilla, then I ran the 
