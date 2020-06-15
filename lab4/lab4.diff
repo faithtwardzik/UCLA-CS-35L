@@ -1,4 +1,4 @@
---- /u/eng/class/classtwa/bin/coreutils-with-bug/lib/timespec.h	2020-02-03 13:33:08.984482000 -0800
+--- /u/eng/class/YOUR_USERNAME/bin/coreutils-with-bug/lib/timespec.h	2020-02-03 13:33:08.984482000 -0800
 +++ timespec.h	2020-02-03 13:34:47.476046000 -0800
 @@ -45,8 +45,12 @@
  static inline int
