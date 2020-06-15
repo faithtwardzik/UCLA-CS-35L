@@ -1,0 +1,103 @@
+Q1)
+The patch improves the performance of ls. It improves the semantic performance
+of ls, because the syntax rules dictate that the second argument should 
+override the first, if they happen to have conflicting actions. This patch
+fixed a breach of that syntax, where ls -a -A was behaving like the first,
+rather than the second argument. Additionally, performance is improved 
+because calls to ls -a -A are no longer required to fetch and print to 
+standard output the two additional hidden files.
+
+Q2)
+There are a couple of potential problems with this modified version of 
+Coreutils. First, there were some error messages and files created during
+the patching process, which might have unintended consequence on the coreutils
+operations, as well as additional .rej files. Also, because the default ls is
+still set to the buggy version of ls, as opposed to the patched version in
+coreutils-8.29, if the modified ls was to be used in a program, the path to
+the new ls would have to be specified every time it was called. This is 
+tiresome and prone to error. You would have to figure out how to set the 
+modified ls as the default command line ls. There is also the problem of 
+this new coreutils-8.29 being several versions higher up than the current, 
+running coreutils 8.22. It's possible that other commands have been modified 
+in the new coreutils version, which would have unintended consequences if they 
+were used in an application in a way that is no longer supported/changed by
+the new version. Similarly, if the application already uses ls, and based its
+use of ls off of the buggy behavior of ls -a -A, then everywhere this was 
+used would need to be fixed, because the new ls would produce incorrect
+behavior now. 
+
+Q3)
+When the script is invoked on the empty file /dev/null, the following is
+printed:
+
+Traceback (most recent call last):
+  File "randline.py", line 70, in <module>
+    main()
+  File "randline.py", line 64, in main
+    sys.stdout.write(generator.chooseline())
+  File "randline.py", line 34, in chooseline
+    return random.choice(self.lines)
+  File "/usr/lib64/python2.7/random.py", line 274, in choice
+    return seq[int(self.random() * len(seq))]  # raises IndexError if seq 
+is empty
+IndexError: list index out of range
+
+This is because:
+randline.py takes in a file and outputs a random line from that file.
+In the chooseline function (line 34), random.choice(self.lines) is called.
+self.lines are the lines that were read in from the file that was passed
+in as an argument. Since an empty file has no lines, this would be empty,
+and random.choice(), which returns a random value from a sequence, is 
+required to have a non-empty sequence argument. This is why
+it outputted the following errors, which both correspond to errors 
+with random.choice() in randline.py and the python lib where it's from:
+  File "randline.py", line 34, in chooseline
+    return random.choice(self.lines)
+ File "/usr/lib64/python2.7/random.py", line 274, in choice
+    return seq[int(self.random() * len(seq))]  # raises IndexError if seq 
+is empty
+IndexError: list index out of range
+
+Q4) 
+When run with python3, the following error message is outputted:
+ File "randline.py", line 65
+    except IOError as (errno, strerror):
+                      ^
+SyntaxError: invalid syntax
+
+The problem here is that python2 allowed you to pass in sequence objects 
+such as tuples (which is what was used here: (errno, strerror)) to 
+exceptions, and then allowed you to iterate over them right away, using 
+this syntax. However, python3 doesn't allow this; instead, you must only 
+pass in one parameter, so then you can use that parameter's arguments 
+in the body of the exception.  
+
+Q5)
+There were a couple of problems when I ran my script using python2. The first
+error message was:
+File "shuff.py", line 80
+    print(*shuf_list, sep = '\n')
+          ^
+SyntaxError: invalid syntax
+
+Apparently, python2 does not support this format for printing out the
+elements of a list. I figured this would be easy to fix by using a loop
+instead, so I wrote up this:
+ 	    count = 0
+            while count < len(shuf_list):
+                print(shuf_list[count])
+                count += 1
+
+When I ran it under python2, this fix worked. However, when I supplied
+the --repeat option, I got another error:
+File "shuff.py", line 75, in <module>
+    shuf_list = random.choices(line_list, k=count)
+AttributeError: 'module' object has no attribute 'choices'
+
+I assume this is because random.choices() is only called when the 
+--repeat option is specified, and python2 did not support random.choices()
+in this manner. Since this is an integral function for the script, there
+was nothing I could do to suitably fix it. And for readability's sake, 
+since our script was only supposed to run under python3, I changed the
+syntax for printing the list back to the way I had it at first, which
+was cleaner. 

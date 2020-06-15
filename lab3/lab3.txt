@@ -1,0 +1,134 @@
+Lab 3 Log
+
+First, I exported /usr/bin to my path, to make sure the ls being referenced 
+was from this directory:
+export PATH=$PATH:/usr/bin
+
+Next, I ran the buggy command on one of my directories:
+ls -a -A
+This outputted the buggy behavior described in the spec; the hidden files . 
+and .. were outputted along with the rest of the directory's contents.
+
+Then, I found the Coreutils version of ls using:
+/usr/bin/ls --version
+This outputted the Coreutils version 8.22 for /usr/bin/ls. 
+
+1.)
+Then, I downloaded the tar ball, as well as the signature and GNU key-ring 
+from the linked website:
+wget ftp://ftp.gnu.org/gnu/coreutils/coreutils-8.29.tar.xz
+wget https://ftp.gnu.org/gnu/gnu-keyring.gpg
+wget ftp://ftp.gnu.org/gnu/coreutils/coreutils-8.29.tar.xz.sig
+
+Then I ran the verification command:
+gpg --verify --keyring ./gnu-keyring.gpg coreutils-8.29.tar.xz.sig
+
+It outputted the following:
+gpg: Signature made Wed 27 Dec 2017 10:29:05 AM PST using RSA key ID 306037D9
+gpg: Good signature from "Pádraig Brady <P@draigBrady.com>"
+gpg:                 aka "Pádraig Brady <pbrady@redhat.com>"
+gpg:                 aka "Pádraig Brady <pixelbeat@gnu.org>"
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg:          There is no indication that the signature belongs to the owner.
+Primary key fingerprint: 6C37 DC12 121A 5006 BC1D  B804 DF6F D971 3060 37D9
+There were no problems with this verification, other than the warning
+that its signature may be from an unreliable source.
+
+Then, I made a temporary directory:
+mkdir temp_dir
+
+And I untar-ed the files within that temporary directory:
+tar -xJvf coreutils-8.29.tar.xz
+mv coreutils-8.29 temp_dir/coreutils-8.29
+
+cd coreutils-8.29
+
+2.)
+I ran the following commands to compile and install:
+./configure
+make
+make install
+
+The make install command did not work; it resulted in the error:
+make: *** [install] Error 2
+As well as about fifty other errors. 
+
+Starting here, I went on a wild goose chase to figure out why I was getting 
+these errors (most of which were permission denied errors) and how to get 
+'make install' to work. One helpful site suggested moving the coreutils 
+package into my usr/bin/ and then adding a path to the coreutils directory 
+into my ~/.profile so that it could be found when ./configure was run. This 
+did not work. Another suggested adding the --prefix option to ./configure:
+./configure --prefix=/u/eng/class/classtwa/bin
+
+This also did not work when I ran make install afterwards. Then I tried 
+changing the --prefix absolute path to my temp_dir, to see if anything 
+happened. 
+./configure --prefix=/u/eng/class/classtwa/Desktop/35L/lab3/temp_dir
+
+However, upon going into temp_dir, there were no files there after configure 
+ran. So obviously, make and then make install gave me the same errors. By 
+some stroke of luck I found a suggestion to use my last command, and then 
+when calling make and make install from inside of coreutils-8.29, do this 
+instead:
+PREFIX=/u/eng/class/classtwa/Desktop/35L/lab3/temp_dir make
+PREFIX=/u/eng/class/classtwa/Desktop/35L/lab3/temp_dir make install
+
+This worked! make install did not return any errors, and the temp_dir had the 
+following directories in it: bin, libexec, and share, as we would expect 
+from the installation.  
+
+3.) I reproduced the bug using the commands in the patch messages:
+cd ..
+mkdir foo
+cd foo
+~/Desktop/35L/lab3/temp_dir/bin/ls -fA
+
+This uses the new coreutils-8.29 version of ls, and outputted:
+. ..
+Which is the same buggy behavior as it should be empty, because -A should be 
+overriding -f. 
+
+4.) I downloaded the patch and transferred it over using FileZilla.
+
+Then, I moved it over to coreutils-8.29 to serve as the working directory:
+mv ~/Desktop/35L/lab3/0001-ls-A-now-overrides-a.patch 
+~/bin/coreutils-8.29/0001-ls-A-now-overrides-a.patch
+
+Then, I applied the patch:
+patch -p1 < 0001-ls-A-now-overrides-a.patch
+
+This outputted a few warnings, but I believe it worked on everything except 
+the file "NEWS":
+patching file NEWS
+Hunk #1 FAILED at 4.
+1 out of 1 hunk FAILED -- saving rejects to file NEWS.rej
+patching file src/ls.c
+Hunk #1 succeeded at 1900 (offset -3 lines).
+patching file tests/local.mk
+patching file tests/ls/a-option.sh
+
+5.)
+I moved to the top of my source tree:
+cd /u
+
+Here, I ran the make file:
+(cd eng/class/classtwa/bin/coreutils-8.29 && make)
+But this gave me several errors, including:
+'WARNING: 'automake-1.15' is missing on your system.'
+
+Piazza suggested a fix, so instead I ran:
+(cd eng/class/classtwa/bin/coreutils-8.29 && autoreconf -f -i && make)
+And this outputted no errors. 
+
+6.)
+I moved to my home directory:
+cd ~
+
+Then, I went back to my foo directory and ran the ls command to see if the 
+patch worked:
+cd ~/Desktop/35L/lab3/foo
+~/bin/coreutils-8.29/src/ls -a -A
+
+This worked! It outputted nothing, which is what we wanted!
+
