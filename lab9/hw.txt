@@ -1,10 +1,16 @@
+Assignment 9: SSH Setup and Use in Applications
+Grade Received: 95/100
+If you found this file helpful, please consider reaching out to me:
+   Website: faithtwardzik.com
+   Insta: @faithtwardzik
+
 Hw9 Log
 
 I used the command:
 gpg2 --gen-key 
 
 It outputted the following:
-gpg: keyring `/u/eng/class/classtwa/.gnupg/secring.gpg' created
+gpg: keyring `/u/eng/class/YOUR_USERNAME/.gnupg/secring.gpg' created
 Please select what kind of key you want:
    (1) RSA and RSA (default)
    (2) DSA and Elgamal
@@ -35,21 +41,21 @@ After this, it prompted me for a passphrase, into which I entered a five-digit
 passphrase that I won't repeat in this CS35L hw log for security purposes.
 
 I used the command gpg2 --list-keys to list my keys, which outputted:
-/u/eng/class/classtwa/.gnupg/pubring.gpg
+/u/eng/class/YOUR_USERNAME/.gnupg/pubring.gpg
 ----------------------------------------
 pub   2048R/3C88E453 2020-03-11
-uid                  Faith Twardzik (35L) <FastFaith@comcast.net>
+uid                  Faith Twardzik (35L) <YOUR_EMAIL>
 sub   2048R/55679E0E 2020-03-11
 
 Then I exported the public key into hw-pubkey.asc by using the command:
-gpg2 --armor --export FastFaith@comcast.net > ~/Desktop/35L/lab9/hw-pubkey.asc
+gpg2 --armor --export YOUR_EMAIL > ~/Desktop/35L/lab9/hw-pubkey.asc
 
 Then, I signed all of my files using the commands:
 gpg2 --output hw.sig --detach-sig hw.txt
 
 After which it prompted me:
 You need a passphrase to unlock the secret key for
-user: "Faith Twardzik (35L) <FastFaith@comcast.net>"
+user: "Faith Twardzik (35L) <YOUR_EMAIL>"
 
 Into which I typed the passphrase I just created. It created the document
 with the detached signature. I then did this for the remaining two files using
@@ -66,7 +72,7 @@ gpg2 --verify hw-pubkey.sig hw-pubkey.
 
 Every time, it outputted something to the effect of:
 gpg: Signature made Tue 10 Mar 2020 06:31:21 PM PDT using RSA key ID 3C88E453
-gpg: Good signature from "Faith Twardzik (35L) <FastFaith@comcast.net>"
+gpg: Good signature from "Faith Twardzik (35L) <YOUR_EMAIL>"
 
 That's it!
 
