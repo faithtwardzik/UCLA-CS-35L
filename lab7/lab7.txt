@@ -1,3 +1,9 @@
+Assignment 7: Basic Change Management
+Grade Received: 100/100
+If you found this file helpful, please consider reaching out to me:
+   Website: faithtwardzik.com
+   Insta: @faithtwardzik
+
 Lab 7 Log 
 
 1) I used the link to the Diffutils' main Savannah repository, and used the
