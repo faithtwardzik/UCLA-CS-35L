@@ -1,3 +1,9 @@
+Assignment 4: C Programming and Debugging
+Grade Received: 92/100
+If you found this file helpful, please consider reaching out to me:
+	Website: faithtwardzik.com
+	Insta: @faithtwardzik
+
 Lab 4 Log
 
 First, I transferred the tar ball over using FileZilla, and untar-ed it:
@@ -7,8 +13,8 @@ Then I made a temporary directory for installation:
 mkdir temp_dir
 
 And I installed the new version of coreutils:
-./configure --prefix=/u/eng/class/classtwa/Desktop/35L/lab4/temp_dir
-PREFIX=/u/eng/class/classtwa/Desktop/35L/lab4/temp_dir make
+./configure --prefix=/u/eng/class/YOUR_USERNAME/Desktop/35L/lab4/temp_dir
+PREFIX=/u/eng/class/YOUR_USERNAME/Desktop/35L/lab4/temp_dir make
 
 However, the make command outputted the following errors because of a 
 redeclaration of futimens:
@@ -27,7 +33,7 @@ directory using FileZilla, then using the command:
 patch -p0 < coreutils.diff
 
 The patching process was successful, so I tried to make the installation again:
-PREFIX=/u/eng/class/classtwa/Desktop/35L/lab4/temp_dir make
+PREFIX=/u/eng/class/YOUR_USERNAME/Desktop/35L/lab4/temp_dir make
 
 This time, make was successful. If we take a look at the patch, it was because
 several files had definitions and/or function calls that were named 
@@ -35,7 +41,7 @@ incorrectly. For example, 'futimens' was changed to 'coreutils_futimens'
 everywhere that it was used. 
 
 Then, I ran the make install command:
-PREFIX=/u/eng/class/classtwa/Desktop/35L/lab3/temp_dir make install
+PREFIX=/u/eng/class/YOUR_USERNAME/Desktop/35L/lab3/temp_dir make install
 
 This did not work. It outputted a permission denied error, for modifying 
 /usr/local/bin files. To fix these errors, I moved my coreutils-with-bug 
@@ -44,7 +50,7 @@ mv coreutils-with-bug ~/bin
 cd ~/bin/coreutils-with-bug
 
 Then, I ran the make install command again:
-PREFIX=/u/eng/class/classtwa/Desktop/35L/lab3/temp_dir make install
+PREFIX=/u/eng/class/YOUR_USERNAME/Desktop/35L/lab3/temp_dir make install
 
 This time, the installation worked without any errors. 
 
@@ -62,10 +68,10 @@ rm -fr $tmp
 
 This outputted the following buggy listing, where wwi-armistice-cs35L is 
 treated as if it was created after now and now1:
--rw-r--r-- 1 classtwa class 0 1918-11-11 11:00:00.000000000 +0000 
+-rw-r--r-- 1 YOUR_USERNAME class 0 1918-11-11 11:00:00.000000000 +0000 
 wwi-armistice-cs35L
--rw-r--r-- 1 classtwa class 0 2020-02-02 22:55:44.678742037 +0000 now1
--rw-r--r-- 1 classtwa class 0 2020-02-02 22:55:43.673724480 +0000 now
+-rw-r--r-- 1 YOUR_USERNAME class 0 2020-02-02 22:55:44.678742037 +0000 now1
+-rw-r--r-- 1 YOUR_USERNAME class 0 2020-02-02 22:55:43.673724480 +0000 now
 
 Then, I ran this ls under gdb to try and find the error:
 gdb ~/bin/coreutils-with-bug/src/ls
@@ -162,25 +168,25 @@ now now1
 
 This outputted the correct results, with wwi-armistice-cs35L showing up as the
 oldest file, with a correct timestamp of 1918:
--rw-r--r-- 1 classtwa class 0 2020-02-03 22:36:29.034240150 +0000 now1
--rw-r--r-- 1 classtwa class 0 2020-02-03 22:36:28.031222750 +0000 now
--rw-r--r-- 1 classtwa class 0 1918-11-11 11:00:00.000000000 +0000 
+-rw-r--r-- 1 YOUR_USERNAME class 0 2020-02-03 22:36:29.034240150 +0000 now1
+-rw-r--r-- 1 YOUR_USERNAME class 0 2020-02-03 22:36:28.031222750 +0000 now
+-rw-r--r-- 1 YOUR_USERNAME class 0 1918-11-11 11:00:00.000000000 +0000 
 wwi-armistice-cs35L
 
 Then, I reproduced the past cases using the regularly-installed ls, to see if
 there are any bugs in the coreutils ls that we use normally. First, I ran it
 using the $tmp directory, and it worked as we would expect:
--rw-r--r-- 1 classtwa class 0 2020-02-04 05:27:29.638673128 +0000 now1
--rw-r--r-- 1 classtwa class 0 2020-02-04 05:27:28.633655673 +0000 now
--rw-r--r-- 1 classtwa class 0 1918-11-11 11:00:00.000000000 +0000 
+-rw-r--r-- 1 YOUR_USERNAME class 0 2020-02-04 05:27:29.638673128 +0000 now1
+-rw-r--r-- 1 YOUR_USERNAME class 0 2020-02-04 05:27:28.633655673 +0000 now
+-rw-r--r-- 1 YOUR_USERNAME class 0 1918-11-11 11:00:00.000000000 +0000 
 wwi-armistice-cs35L
 
 However, when I ran it in one of my normal directories, the output was not
 correct:
--rw-r--r-- 1 classtwa class 0 2054-12-17 17:28:16.000000000 +0000 
+-rw-r--r-- 1 YOUR_USERNAME class 0 2054-12-17 17:28:16.000000000 +0000 
 wwi-armistice-cs35L
--rw-r--r-- 1 classtwa class 0 2020-02-03 23:48:46.248486000 +0000 now1
--rw-r--r-- 1 classtwa class 0 2020-02-03 23:48:45.244483000 +0000 now
+-rw-r--r-- 1 YOUR_USERNAME class 0 2020-02-03 23:48:46.248486000 +0000 now1
+-rw-r--r-- 1 YOUR_USERNAME class 0 2020-02-03 23:48:45.244483000 +0000 now
 
 It still shows up as having been created in the future (2054) instead of the
 past. So coreutils is still somewhat buggy, albeit less so than the old 
