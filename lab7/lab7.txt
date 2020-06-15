@@ -1,0 +1,381 @@
+Lab 7 Log 
+
+1) I used the link to the Diffutils' main Savannah repository, and used the
+following command to clone a copy of the repository:
+
+git clone https://git.savannah.gnu.org/git/diffutils.git
+
+2) I used cd to move into the diffutils directory. Then, I used touch
+to create a git-log.txt not in the working directory:
+
+touch ~/Desktop/35L/lab7/git-log.txt
+
+Finally, I ran the git log command within the diffutils directory, and
+redirected it to git-log.txt:
+
+git log > ~/Desktop/35L/lab7/git-log.txt
+
+3) I did the same thing for git tag, by touching a git-tags.txt:
+
+touch ~/Desktop/35L/lab7/git-tags.txt
+
+Then, I ran the git tag command in diffutils, redirecting it to
+git-tags.txt:
+
+git tag > ~/Desktop/35L/lab7/git-tag.txt
+
+4) I openned up git-log.txt in Emacs and used C-s to search for: "maint: 
+quote", which moved me to the correct commit. I copied down the commit
+hash:
+
+62ca21c8c1a5aa3488589dcb191a4ef04ae9ed4f
+
+Then, I returned to the diffutils directory. To generate a patch, we can use
+git format-patch. Since we want to format only that one commit, we should use
+the -1 option. And, since we want the patch in just one file, we should use
+the --stdout option and instead redirect to a file. I then touched a patch
+file:
+
+touch ~/Desktop/35L/lab7/quote-patch.txt
+
+Then I used the format-patch command inside of the diffutils directory:
+
+git format-patch --stdout -1 62ca21c8c1a5aa3488589dcb191a4ef04ae9ed4f > ~/Desktop/35L/lab7/quote-patch.txt
+
+5) I used the following command to create a new branch at v3.0 from 
+git-log.txt:
+
+git checkout -b patchbranch v3.0 
+
+6) I used the following command to apply the patch:
+
+patch -p1 < ~/Desktop/35L/lab7/quote-patch.txt
+
+There were three files missing, where I typed in RETURN to move to the next
+file to patch. These included:
+HACKING
+/doc/diffutils.texi
+/man/help2man
+
+There were also a bunch of files in which hunks of changes failed. These are 
+the files and line numbers in which hunks failed:
+README
+Hunk #1 FAILED at 9.
+Hunk #3 FAILED at 60.
+
+README-hacking
+Hunk #1 FAILED at 19.
+
+cfg.mk
+Hunk #1 FAILED at 29.
+
+src/diff.c
+Hunk #10 FAILED at 876.
+Hunk #11 FAILED at 906.
+Hunk #12 FAILED at 942.
+
+src/diff3.c
+Hunk #6 FAILED at 433.
+
+7) I used the following command:
+
+git status
+
+This outputted the following:
+
+# On branch patchbranch
+# Changes not staged for commit:
+#   (use "git add <file>..." to update what will be committed)
+#   (use "git checkout -- <file>..." to discard changes in working directory)
+#
+#       modified:   NEWS
+#       modified:   README
+#       modified:   TODO
+#       modified:   doc/diagmeet.note
+#       modified:   ms/config.bat
+#       modified:   ms/config.site
+#       modified:   po/en.po
+#       modified:   src/analyze.c
+#       modified:   src/cmp.c
+#       modified:   src/context.c
+#       modified:   src/diff.c
+#       modified:   src/diff.h
+#       modified:   src/diff3.c
+#       modified:   src/dir.c
+#       modified:   src/ifdef.c
+#       modified:   src/io.c
+#       modified:   src/sdiff.c
+#       modified:   src/side.c
+#       modified:   src/system.h
+#       modified:   src/util.c
+#       modified:   tests/help-version
+#
+# Untracked files:
+#   (use "git add <file>..." to include in what will be committed)
+#
+#       NEWS.orig
+#       README-hacking.orig
+#       README-hacking.rej
+#       README.orig
+#       README.rej
+#       cfg.mk.orig
+#       cfg.mk.rej
+#       ms/config.site.orig
+#       src/cmp.c.orig
+#       src/context.c.orig
+#       src/diff.c.orig
+#       src/diff.c.rej
+#       src/diff.h.orig
+#       src/diff3.c.orig
+#       src/diff3.c.rej
+#       src/dir.c.orig
+#       src/sdiff.c.orig
+#       src/system.h.orig
+#       src/util.c.orig
+#       tests/help-version.orig
+no changes added to commit (use "git add" and/or "git commit -a")
+
+Here we first see the tracked files that were modified by the patch, but
+have not yet been staged by git add. The second list of files are new,
+untracked files that were created in the patching process.
+
+8) I played around with the Emacs functions in the spec. vc-diff creates a 
+diff based on two different versions of a VC fileset. vc-revert reverts all
+of the changes in the latest revision to the current VC fileset. C-u C-c C-a 
+reverts a hunk, whereas C-c C-a applies a hunk. C-c C-c jumps to the line 
+that corresponds to a hunk.
+
+9) Right away, we can see that we will need to revert the changes to non-.c
+files. Then we can use the vc-diff command to see which changes were made to
+.c files, and manually revert those changes that were not changes to character
+string constants.
+
+First, I retrieved a list of the files changed from the patch from 
+quote-patch.txt:
+
+ HACKING            |  4 ++--
+ NEWS               | 26 +++++++++++++-------------
+ README             | 10 +++++-----
+ README-hacking     |  2 +-
+ TODO               |  2 +-
+ cfg.mk             |  2 +-
+ doc/diagmeet.note  |  2 +-
+ doc/diffutils.texi |  2 +-
+ man/help2man       | 33 +++++++++++++++++++--------------
+ ms/config.bat      |  2 +-
+ ms/config.site     |  2 +-
+ po/en.po           | 14 +++-----------
+ src/analyze.c      |  6 +++---
+ src/cmp.c          | 20 ++++++++++----------
+ src/context.c      | 10 +++++-----
+ src/diff.c         | 40 ++++++++++++++++++++--------------------
+ src/diff.h         |  8 ++++----
+ src/diff3.c        | 26 +++++++++++++-------------
+ src/dir.c          |  8 ++++----
+ src/ifdef.c        |  2 +-
+ src/io.c           |  4 ++--
+ src/sdiff.c        | 22 +++++++++++-----------
+ src/side.c         |  6 +++---
+ src/system.h       |  6 +++---
+ src/util.c         | 24 ++++++++++++------------
+ tests/help-version | 12 ++++++------
+
+We want to revert the changes to all files that are not .c files, so I compiled
+a list of those:
+
+D HACKING            |  4 ++--
+D NEWS               | 26 +++++++++++++-------------
+D README             | 10 +++++-----
+D README-hacking     |  2 +-
+D TODO               |  2 +-
+D cfg.mk             |  2 +-
+D doc/diagmeet.note  |  2 +-
+D doc/diffutils.texi |  2 +-
+D man/help2man       | 33 +++++++++++++++++++--------------
+D ms/config.bat      |  2 +-
+D ms/config.site     |  2 +-
+D po/en.po           | 14 +++-----------
+D src/diff.h         |  8 ++++----
+D src/system.h       |  6 +++---
+D tests/help-version | 12 ++++++------
+
+Then, I opened up each of these in emacs and used the command C-x v u to 
+revert the last changes made. 
+
+Then, I compiled a list of every .c file that was changed by the patch,
+and opened up each of them in Emacs. I used the C-x v = command to see a diff
+from the last version, and for each change that was in a comment and so not
+character string constants, I manually moved to that line in the file and
+reverted the ' to a `. On the right are the lines that I reverted from each 
+file:
+                                                             Lines Reverted
+ src/analyze.c      |  6 +++---                             38, 251, 595
+ src/cmp.c          | 20 ++++++++++----------                36, 364(2), 377 
+ src/context.c      | 10 +++++-----                    159, 289, 393, 431, 459
+ src/diff.c         | 40 ++++++++++++++++++++----------------- 40, 57(3), 92(2)
+ src/diff3.c        | 26 +++++++++++++-------------          35, 159, 1475
+ src/dir.c          |  8 ++++----                            84, 125, 234
+ src/ifdef.c        |  2 +-                                  132
+ src/io.c           |  4 ++--                                57(2)
+ src/sdiff.c        | 22 +++++++++++-----------              35, 92, 747      
+ src/side.c         |  6 +++---                              292, 302, 310
+ src/util.c         | 24 ++++++++++++------ 27, 121, 146(2), 190, 241, 270, 650
+
+10) There were two .c files that corresponded to .c.rej files. These were:
+diff3.c
+diff.c
+
+I manually opened up the diff3.c.rej and diff.c.rej files and replaced the
+rejected patch hunks in these files with the original in diff3.c and diff.c.
+These changes were:
+
+ src/diff3.c, Line 433
+N_("-i append 'w' and 'q' commands to ed scripts"),
+
+ src/diff.c, Line 876
+N_("-l, --paginate pass output through 'pr' to paginate it"),
+
+ Line 906
+N_("-D, --ifdef=NAME output merged file with '#ifdef NAME' diffs"),
+N_("  LTYPE is 'old', 'new', or 'unchanged'.  GTYPE is LTYPE or 'changed'."),
+
+ Line 942
+N_("FILES are 'FILE1 FILE2' or 'DIR1 DIR2' or 'DIR FILE...' or 'FILE... DIR'."),
+N_("If a FILE is '-', read standard input."),
+
+The reason these patches were rejected in the first place is either because
+the original text did not match the text in the files, or because the line 
+number in the patch file did not correctly correspond to that line in the .c
+file.
+
+11) git status gives us these untracked files (from the src directory):
+# Untracked files:
+#   (use "git add <file>..." to include in what will be committed)
+#
+#       ../NEWS.orig
+#       ../README-hacking.orig
+#       ../README-hacking.rej
+#       ../README.orig
+#       ../README.rej
+#       ../cfg.mk.orig
+#       ../cfg.mk.rej
+#       ../ms/config.site.orig
+#       cmp.c.orig
+#       context.c.orig
+#       diff.c.orig
+#       diff.c.rej
+#       diff.h.orig
+#       diff3.c.orig
+#       diff3.c.rej
+#       dir.c.orig
+#       sdiff.c.orig
+#       system.h.orig
+#       util.c.orig
+#       ../tests/help-version.orig
+no changes added to commit (use "git add" and/or "git commit -a")
+
+Then, I used the following command:
+git clean -n
+
+This showed me what would be deleted if I used git clean, and I cross-referenced
+it with the above list of untracked files to make sure they matched. They did, 
+so I ran the command:
+
+git clean -f
+
+This forcefully removed all untracked files. 
+
+12) These are the modified files git status reports:
+# On branch patchbranch
+# Changes not staged for commit:
+#   (use "git add <file>..." to update what will be committed)
+#   (use "git checkout -- <file>..." to discard changes in working directory)
+#
+#       modified:   src/cmp.c
+#       modified:   src/diff.c
+#       modified:   src/diff3.c
+#       modified:   src/dir.c
+#       modified:   src/sdiff.c
+#       modified:   src/util.c
+
+I touched a quote-3.0-path.txt:
+touch ~/Desktop/35L/lab7/quote-3.0-patch.txt
+
+Then I ran git diff in the diffutils directory and redirected it to that file:
+git diff > ~/Desktop/35L/lab7/quote-3.0-patch.txt
+
+13) I ran the following commands to build the modified Diffutils: 
+
+./bootstrap
+
+I'm running on lnxsrv09, so I had to transfer the additional patch over using
+FileZilla. I ran it:
+patch < ~/Desktop/35L/lab7/diffutils-gets.diff
+
+But this did not work. Upon inspecting the diff file, I had to change the
+first line from old/stdio.in.h to lib/stdio.in.h. Then the following patch
+command worked:
+patch -p0 < ~/Desktop/35L/lab7/diffutils-gets.diff
+
+After this, I used the following commands to finish building:
+./configure
+make
+make check
+
+I did get a few errors when I ran make check:
+/bin/sh: /bin/sh: cannot execute binary file
+make[3]: *** [basic.log] Error 126
+make[3]: Leaving directory `/w/home.27/class/classtwa/Desktop/35L/lab7/diffutils/tests'
+make[2]: *** [check-TESTS] Error 2
+make[2]: Leaving directory `/w/home.27/class/classtwa/Desktop/35L/lab7/diffutils/tests'
+make[1]: *** [check-am] Error 2
+make[1]: Leaving directory `/w/home.27/class/classtwa/Desktop/35L/lab7/diffutils/tests'
+make: *** [check-recursive] Error 1
+
+But I do not believe these will affect subsequent steps. 
+
+Then, I used the two commands:
+diff . -
+diff --help
+
+The first outputted:
+diff: cannot compare '-' to a directory
+
+This includes a ' instead of a `, as we want. The second outputs help messages
+that also use ' instead of `, which means that Diffutils does what we want
+in regards to apostrophes instead of graves.
+
+14) I created two directories from diffutils:
+mkdir ../diffutils-3.0-patch
+mkdir ../diffutils-3.0
+
+Then I moved to the src directory:
+cd src
+And I used the following command to copy all of the .c files to the
+diffutils-3.0-patch directory:
+cp ./*.c ~/Desktop/35L/lab7/diffutils-3.0-patch
+
+Then we go back to get the original Diffutils 3.0 source code, first by
+re-cloning the git repository in a new directory v3_diffutils:
+git clone https://git.savannah.gnu.org/git/diffutils.git
+
+Then I cd'ed into diffutils, and switched to the version 3 branch:
+git checkout -b patchbranch v3.0
+
+From here, I moved to the src directory, and copied all the .c files into
+the diffutils-3.0 directory:
+cp ./*.c ~/Desktop/35L/lab7/diffutils-3.0
+
+Then, I ran the following command to compare the source code in these
+directories:
+./diffutils/src/diff -pru diffutils-3.0 diffutils-3.0-patch >quote-3.0-test.txt
+
+15) Then I ran the following diff command:
+diff quote-3.0-test.txt quote-3.0-patch.txt
+
+The files are not identical. However, it looks like the differences might be
+innocuous. The differences are in graves to apostrophes, as we would expect, 
+and in the directory (diffutils-3.0 vs diffutils-3.0-patch), which we would
+also expect.
+
+

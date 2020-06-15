@@ -1,0 +1,116 @@
+Homework 7 Log
+
+1) I created and entered this file: 
+touch hw7.txt
+emacs hw7.txt
+
+2) I used the following to checkout a new branch named 'quote':
+git checkout -b quote v3.0
+
+3) I used the following patch command to apply quote-patch-3.0.txt:
+patch -p1 < ~/Desktop/35L/lab7/quote-3.0-patch.txt
+
+4) Basically, C-x 4 a opens up a ChangeLog for you to edit, giving you the 
+basic format of a ChangeLog unto which you can add entries.
+
+5) I opened up emacs using: 
+emacs quote-3.0-patch.txt
+
+Then, I used the command:
+C-x 4 a 
+
+This opened up a ChangeLog, and I crafted ChangeLog entries for each of the 
+files that are patched using quote-3.0-patch.txt, using the patching list to 
+get a list of all the file names:
+
+patching file src/cmp.c
+patching file src/diff.c
+patching file src/diff3.c
+patching file src/dir.c
+patching file src/sdiff.c
+patching file src/util.c
+
+ChangeLog entry: 
+
+2020-02-24  Faith Sara Twardzik  <classtwa@lnxsrv09.seas.ucla.edu>
+
+        * src/cmp.c: convert ` (grave) to ' (apostrophe) in character strings
+        * src/diff.c: convert ` (grave) to ' (apostrophe) in character strings
+        * src/diff3.c: convert ` (grave) to ' (apostrophe) in character strings
+        * src/dir.c: convert ` (grave) to ' (apostrophe) in character strings
+        * src/sdiff.c: convert ` (grave) to ' (apostrophe) in character strings
+
+6) Then, I used git add to move all of the files modified by the patch to
+the staging area to be committed:
+git add --all
+
+Finally, I used git commit to commit all of these modified files:
+git commit
+
+And I copied and pasted the ChangeLog entry into the commit message, using
+:wq to exit the text editor when I was finished.
+
+I realized later on that I could have also used:
+git commit -F ~/Desktop/35L/lab7/ChangeLog
+
+This would have made the ChangeLog text from this file the commit message.
+
+7) I used the following command to generate a patch:
+git format-patch -1 --stdout > ~/Desktop/35L/lab7/formatted-patch.txt
+
+8) I cloned a new repository and called it diffutils_check:
+git clone https://git.savannah.gnu.org/git/diffutils.git diffutils_check
+
+Then, I moved into diffutils_check and checked out a new branch at v3.0:
+git checkout -b patchery v3.0
+
+Then I used the following command to apply the patch in the diffutils_check
+directory:
+git am ~/Desktop/35L/lab7/formatted-patch.txt
+
+Then, I went on to build as we did before:
+./bootstrap
+patch -p0 < ~/Desktop/35L/lab7/diffutils-gets.diff
+./configure
+make
+make check
+
+These all worked, except for the same errors with make check as before:
+/bin/sh: /bin/sh: cannot execute binary file
+make[3]: *** [basic.log] Error 126
+make[3]: Leaving directory `/w/home.27/class/classtwa/Desktop/35L/lab7/
+diffutils_check/diffutils/tests'
+make[2]: *** [check-TESTS] Error 2
+make[2]: Leaving directory `/w/home.27/class/classtwa/Desktop/35L/lab7/
+diffutils_check/diffutils/tests'
+make[1]: *** [check-am] Error 2
+make[1]: Leaving directory `/w/home.27/class/classtwa/Desktop/35L/lab7/
+diffutils_check/diffutils/tests'
+make: *** [check-recursive] Error 1
+
+9) I ran the following command in the diffutils directory:
+make distdir
+
+This created a directory called: diffutils-3.0.1-f585
+I moved into this directory and used emacs to look at the file ChangeLog. This 
+version of the ChangeLog looked exactly as it should.
+ 
+10) I used XQuartz.    
+
+The newest merge that is not newer than 01-25-2015 is: 
+"Merge branch 'master' into xwidget", made on 2015-01-25 12:19:27, 
+authored and committed by Joakim Verona <joakim@verona.se>.
+I found this by scrolling through to find the correct date.
+
+The subwindows are: 
+The top left side has the commit message.
+The middle has the author/committer.
+The right side has the date of the commit.
+The bottom left subwindow has all of the additional information, including author, 
+committer,parents, children, etc.
+
+To check yourself, you can go to the directory ~eggert/src/gnu/emacs-CS-35L and run:
+git log --before="2015-01-26" --after="2015-01-24" --pretty="%s %cd" --merges
+
+This will show the merge that occurred on 01-25-2015, and will give both the date 
+and description.
