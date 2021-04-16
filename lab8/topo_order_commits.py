@@ -1,5 +1,4 @@
 # Assignment 8: Change Management Spelunking and Implementation
-# Grade Received: 80/100 (mostly late policy)
 # If you found this file helpful, please consider reaching out to me:
 #	Website: faithtwardzik.com
 #	Insta: @faithtwardzik
